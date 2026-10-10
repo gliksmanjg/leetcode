@@ -1,56 +1,43 @@
-/* Reflection
-
-BubbleSort heeft een tijdscomplexiteit van O(n^2) vanwege de recursie:
-
-    1. De loop intereert eerst over nums.Length elementen -> lineair O(n) -> result [7, 11, 2, 15]
-    2. Recursie wordt aangeroepen en verwijderd de laatste index:
-        - aantal operaties: n + (n - 1) + (n - 2) + ... + 1 -> n = nums.Length => 4 + 3 + 2 + 1 = 10
-    3. De loop onderaan is O(n)
-    
-    ==> big-o notatie: #1 is een loop = O(n), #3 is een loop O(n), #2 recursie is een loop-wrapper rond de #1 loop => O(n) * O(n) = O(n^2)
-
-*/
-
 int[] nums = [15, 7, 11, 2];
 int target = 9;
 
-static void BubbleSort(int[] nums, int length)
+// het opdelen van de array
+void MergeSort(int[] arr)
 {
-    // base case
-    if (length <= 1) return;
+    if (arr.Length <= 1) return;
 
-    int temp;
-    for (int i = 0; i < length - 1; i++)
+    int midIdx = arr.Length / 2;
+    int[] left = arr[..midIdx];
+    int[] right = arr[midIdx..];
+
+    MergeSort(left);
+    MergeSort(right);
+
+    Merge(arr, left, right);
+}
+
+// twee gesorteerde helften samenvoegen in arr
+void Merge(int[] arr, int[] left, int[] right)
+{
+    int i = 0, j = 0, k = 0;
+
+    while (i < left.Length && j < right.Length)
     {
-        ref int current = ref nums[i]; // zonder `ref` krijg ik een kopie
-        ref int next = ref nums[i + 1];
-
-        if (current > next)
-        {
-            temp = current;
-            current = next;
-            next = temp;
-        }
+        arr[k++] = left[i] <= right[j] ? left[i++] : right[j++];
     }
 
-    BubbleSort(nums, length - 1);
+    CopyRemaining(arr, left, i, k);
+    CopyRemaining(arr, right, j, k + (left.Length - i));
 }
 
-int[] GetIndicesFor(int target, int[] arr)
+// de overgebleven elementen van één helft kopiëren
+void CopyRemaining(int[] arr, int[] source, int sourceIdx, int arrIdx)
 {
-    BubbleSort(nums, nums.Length);
-
-    int sum;
-    for (int i = 0; i < arr.Length; i++)
+    while (sourceIdx < source.Length)
     {
-        sum = arr[i] + arr[i + 1];
-        if (sum == target) return [i, i + 1];
+        arr[arrIdx++] = source[sourceIdx++];
     }
-
-    return [];
 }
 
-foreach (var item in GetIndicesFor(target, nums))
-{
-    Console.WriteLine(item);
-}
+MergeSort(nums);
+Console.WriteLine(string.Join(", ", nums)); // 2, 7, 11, 15
